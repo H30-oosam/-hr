@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-brand-primary: #3b82f6; /* Blue 500 */
+  --color-brand-dark: #1e293b; /* Slate 800 */
+  --color-bg-main: #f0f2f5;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-800 bg-bg-main selection:bg-brand-primary selection:text-white;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+.rtl {
+  direction: rtl;
+}
+
+.bento-card {
+  @apply bg-white rounded-[1.5rem] p-6 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-black/5 transition-all duration-300;
+}
+
+.bento-card-dark {
+  @apply bg-brand-dark text-white border-none;
+}
+
+.section-padding {
+  @apply py-12 px-6 max-w-7xl mx-auto;
+}
