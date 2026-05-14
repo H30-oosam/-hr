@@ -22,7 +22,14 @@ import {
   Zap,
   Filter,
   CheckCircle2,
-  Camera
+  Camera,
+  LayoutDashboard,
+  LogOut,
+  BarChart,
+  Settings,
+  Edit,
+  Trash2,
+  Globe
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI } from "@google/genai";
@@ -412,6 +419,300 @@ const AdminPanel = ({
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+};
+
+const Dashboard = ({ 
+  posts, 
+  onDeletePost, 
+  onAddPost, 
+  profileImage, 
+  onUpdateProfile,
+  onExit 
+}: { 
+  posts: BlogPost[]; 
+  onDeletePost: (id: string) => void; 
+  onAddPost: (post: BlogPost) => void;
+  profileImage: string;
+  onUpdateProfile: (img: string) => void;
+  onExit: () => void;
+}) => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'users' | 'settings'>('overview');
+  
+  // Mock data for users
+  const [users] = useState([
+    { id: '1', name: 'حسام الورداني', role: 'أدمن', email: 'hossam@hrinsight.com', avatar: profileImage },
+    { id: '2', name: 'أحمد محمود', role: 'محرر', email: 'ahmed@blog.com', avatar: 'https://i.pravatar.cc/100?u=1' },
+    { id: '3', name: 'سارة خالد', role: 'محرر', email: 'sara@blog.com', avatar: 'https://i.pravatar.cc/100?u=2' },
+  ]);
+
+  const stats = [
+    { title: 'إجمالي المقالات', value: posts.length, icon: <BookOpen size={20} />, color: 'bg-blue-50 text-blue-600' },
+    { title: 'عدد المستخدمين', value: users.length, icon: <Users size={20} />, color: 'bg-purple-50 text-purple-600' },
+    { title: 'إجمالي التعليقات', value: '٢٤', icon: <MessageCircle size={20} />, color: 'bg-orange-50 text-orange-600' },
+    { title: 'مشاهدات الشهر', value: '١.٢ ألف', icon: <BarChart size={20} />, color: 'bg-emerald-50 text-emerald-600' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex rtl">
+      {/* Sidebar */}
+      <aside className="w-72 bg-white border-l border-black/5 flex flex-col fixed h-full">
+        <div className="p-8 border-b border-black/5 flex items-center gap-3">
+          <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-primary/20">
+            <LayoutDashboard size={22} />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800">الأدمن</h1>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-2 mt-4">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'overview' ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <BarChart size={18} />
+            <span>نظرة عامة</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('posts')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'posts' ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <BookOpen size={18} />
+            <span>المقالات</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('users')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'users' ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <Users size={18} />
+            <span>المستخدمين</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('settings')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${activeTab === 'settings' ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20' : 'text-slate-500 hover:bg-slate-50'}`}
+          >
+            <Settings size={18} />
+            <span>الإعدادات</span>
+          </button>
+        </nav>
+
+        <div className="p-4 border-t border-black/5">
+          <button 
+            onClick={onExit}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-xs text-red-500 hover:bg-red-50 transition-all uppercase tracking-widest mt-auto mb-4"
+          >
+            <Globe size={18} />
+            <span>العودة للموقع</span>
+          </button>
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl">
+            <img src={profileImage} className="w-10 h-10 rounded-xl bg-slate-200 object-cover" />
+            <div>
+              <div className="text-[10px] font-black text-slate-800">{ABOUT_ME.name}</div>
+              <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Counselor</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 mr-72 p-10 overflow-y-auto">
+        <header className="flex items-center justify-between mb-12">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 mb-2">
+              {activeTab === 'overview' && 'لوحة المعلومات الحية'}
+              {activeTab === 'posts' && 'إدارة المقالات'}
+              {activeTab === 'users' && 'فريق العمل والمحررين'}
+              {activeTab === 'settings' && 'إعدادات النظام'}
+            </h2>
+            <p className="text-sm text-slate-500 font-bold">مرحباً بك في لوحة تحكم HR Insight 🚀</p>
+          </div>
+          
+          <div className="flex items-center gap-4">
+             <div className="relative">
+                <Bell size={20} className="text-slate-400" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-slate-50">٢</div>
+             </div>
+             <AdminPanel onAddPost={onAddPost} onUpdateProfile={onUpdateProfile} currentProfileImage={profileImage} />
+          </div>
+        </header>
+
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {stats.map((s, i) => (
+                <div key={i} className="bg-white p-6 rounded-[2rem] border border-black/5 shadow-sm">
+                   <div className="flex items-center justify-between mb-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.color}`}>
+                        {s.icon}
+                      </div>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">نشط</span>
+                   </div>
+                   <div className="text-3xl font-black text-slate-900 mb-1">{s.value}</div>
+                   <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.title}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+               <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-black/5 p-8">
+                  <div className="flex items-center justify-between mb-8">
+                    <h3 className="font-black text-slate-900">آخر المقالات المضافة</h3>
+                    <button onClick={() => setActiveTab('posts')} className="text-[10px] font-black text-brand-primary uppercase tracking-widest underline underline-offset-4">عرض الكل</button>
+                  </div>
+                  <div className="space-y-6">
+                    {posts.slice(0, 3).map((post) => (
+                      <div key={post.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-black/5 group hover:bg-slate-100 transition-all">
+                        <div className="flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-200">
+                             <img src={post.image} className="w-full h-full object-cover" />
+                           </div>
+                           <div>
+                              <h4 className="font-bold text-slate-800 text-sm mb-1">{post.title}</h4>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase">{post.category} • {post.date}</p>
+                           </div>
+                        </div>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button className="p-2 text-slate-400 hover:text-brand-primary transition-colors"><Edit size={16} /></button>
+                           <button onClick={() => onDeletePost(post.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+
+               <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden">
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-primary/20 blur-[60px] rounded-full" />
+                  <div className="relative z-10 flex flex-col h-full justify-between">
+                     <div className="w-12 h-12 bg-brand-primary/20 rounded-2xl flex items-center justify-center text-brand-primary mb-6">
+                       <Zap size={24} />
+                     </div>
+                     <h3 className="text-2xl font-black mb-4 leading-tight">تطوير مستمر <br/> للأداء والأنظمة</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-8">نعمل باستمرار على تحديث لوحة التحكم لتوفر لك أدق الإحصائيات وأسهل الوسائل لإدارة المحتوى.</p>
+                     <div className="mt-auto">
+                        <div className="text-[10px] font-black text-brand-primary uppercase tracking-widest mb-2">إصدار النظام</div>
+                        <div className="text-lg font-black">v2.4.0 <span className="text-xs font-medium text-slate-500 italic">(AI Integrated)</span></div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'posts' && (
+          <div className="bg-white rounded-[2.5rem] border border-black/5 overflow-hidden shadow-sm">
+            <div className="p-8 border-b border-black/5 flex items-center justify-between bg-slate-50/50">
+              <h3 className="font-black text-slate-900">قائمة المقالات</h3>
+              <div className="flex gap-3">
+                 <div className="relative">
+                    <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input type="text" placeholder="ابحث في المقالات..." className="bg-white border border-black/5 rounded-xl pr-10 pl-4 py-2 text-xs outline-none focus:ring-1 focus:ring-brand-primary font-bold" />
+                 </div>
+              </div>
+            </div>
+            <table className="w-full text-right border-collapse">
+              <thead>
+                <tr className="bg-slate-50/50">
+                  <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">المقال</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">التصنيف</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">التاريخ</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/5">
+                {posts.map((post) => (
+                  <tr key={post.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                          <img src={post.image} className="w-full h-full object-cover" />
+                        </div>
+                        <span className="font-bold text-slate-800 text-sm group-hover:text-brand-primary transition-colors">{post.title}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase">{post.category}</span>
+                    </td>
+                    <td className="px-8 py-5 text-sm text-slate-500 font-bold">{post.date}</td>
+                    <td className="px-8 py-5 text-left">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-all"><Edit size={14} /></button>
+                        <button onClick={() => onDeletePost(post.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all"><Trash2 size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {users.map((user) => (
+              <div key={user.id} className="bg-white p-8 rounded-[2.5rem] border border-black/5 shadow-sm text-center relative overflow-hidden group">
+                <div className="absolute top-0 left-0 right-0 h-2 bg-brand-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="w-20 h-20 rounded-[2rem] bg-slate-50 overflow-hidden mx-auto mb-6 shadow-xl border-4 border-white">
+                  <img src={user.avatar} className="w-full h-full object-cover" />
+                </div>
+                <h4 className="text-lg font-black text-slate-900 mb-1">{user.name}</h4>
+                <div className="text-brand-primary font-bold text-[10px] uppercase tracking-widest mb-4">{user.role}</div>
+                <div className="text-xs text-slate-500 font-medium mb-6">{user.email}</div>
+                <div className="flex gap-2 justify-center pt-6 border-t border-black/5">
+                  <button className="px-4 py-2 bg-slate-100 rounded-xl text-[10px] font-black text-slate-500 hover:bg-slate-200 transition-all">تعديل الصلاحيات</button>
+                  <button className="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><Trash2 size={16} /></button>
+                </div>
+              </div>
+            ))}
+            <button className="border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 p-8 text-slate-400 hover:border-brand-primary/40 hover:bg-slate-50 transition-all group">
+               <div className="p-4 bg-slate-50 rounded-2xl group-hover:bg-brand-primary/5 group-hover:text-brand-primary transition-colors">
+                 <Plus size={32} />
+               </div>
+               <span className="font-black text-sm uppercase tracking-widest">إضافة عضو جديد</span>
+            </button>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="bg-white rounded-[2.5rem] border border-black/5 p-10 max-w-2xl">
+             <div className="space-y-10">
+                <div>
+                   <h3 className="font-black text-slate-900 mb-2">إعدادات الموقع المتقدمة</h3>
+                   <p className="text-xs text-slate-500 font-bold mb-8">خصائص الموقع والتحكم التقني</p>
+                   
+                   <div className="space-y-6">
+                      <div className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl">
+                         <div>
+                            <div className="font-black text-sm text-slate-800 mb-1">وضع الصيانة</div>
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">إغلاق الموقع للزوار مؤقتاً</div>
+                         </div>
+                         <div className="w-12 h-6 bg-slate-200 rounded-full relative cursor-pointer">
+                            <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                         </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl">
+                         <div>
+                            <div className="font-black text-sm text-slate-800 mb-1">توليد الصور بالذكاء الاصطناعي</div>
+                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">تفعيل خدمة Gemini لرسوم المقالات</div>
+                         </div>
+                         <div className="w-12 h-6 bg-brand-primary rounded-full relative cursor-pointer">
+                            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                         </div>
+                      </div>
+
+                      <div className="p-6 bg-blue-50 border border-blue-100 rounded-2xl">
+                         <div className="flex items-center gap-3 mb-4">
+                            <Sparkles size={18} className="text-blue-600" />
+                            <span className="font-black text-sm text-blue-900 uppercase tracking-widest">تحديثات الأمان</span>
+                         </div>
+                         <p className="text-xs text-blue-700 leading-relaxed font-bold">يتم فحص الموقع وتأمينه تلقائياً كل ٢٤ ساعة باستخدام خوارزميات الذكاء الاصطناعي لضمان حماية بياناتك.</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
@@ -808,7 +1109,7 @@ const ContactForm = () => {
   );
 };
 
-const Navbar = ({ onSearch }: { onSearch: (q: string) => void }) => {
+const Navbar = ({ onSearch, onEnterDashboard }: { onSearch: (q: string) => void, onEnterDashboard: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -844,6 +1145,13 @@ const Navbar = ({ onSearch }: { onSearch: (q: string) => void }) => {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
+          <button 
+            onClick={onEnterDashboard}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+          >
+            <LayoutDashboard size={16} />
+            لوحة التحكم
+          </button>
           <AnimatePresence>
             {showSearch && (
               <motion.input 
@@ -1183,6 +1491,7 @@ const Footer = () => (
 );
 
 export default function App() {
+  const [view, setView] = useState<'main' | 'dashboard'>('main');
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [allPosts, setAllPosts] = useState<BlogPost[]>(() => {
     const saved = localStorage.getItem('posts');
@@ -1241,9 +1550,22 @@ export default function App() {
     setTimeout(() => setNewsletterStatus('success'), 1500);
   };
 
+  if (view === 'dashboard') {
+    return (
+      <Dashboard 
+        posts={allPosts} 
+        profileImage={profileImage}
+        onDeletePost={handleDeletePost}
+        onAddPost={handleAddPost}
+        onUpdateProfile={handleUpdateProfileImage}
+        onExit={() => setView('main')}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-bg-main font-sans selection:bg-brand-primary selection:text-white">
-      <Navbar onSearch={setSearchQuery} />
+      <Navbar onSearch={setSearchQuery} onEnterDashboard={() => setView('dashboard')} />
       
       <AnimatePresence>
         {selectedPost && (
